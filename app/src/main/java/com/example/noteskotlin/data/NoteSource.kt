@@ -1,11 +1,11 @@
-package com.example.noteskotlin.data;
+package com.example.noteskotlin.data
 
-public interface NoteSource {
-    NoteSource init(NoteSourceResponse noteSourceResponse);
-    int size();
-    NoteData getNoteDate(int position);
-    void addNote(NoteData noteData);
-    void deleteNote(int position);
-    void updateNote(int position, NoteData noteData);
-    void clearNote();
+interface NoteSource {
+    fun init(noteSourceResponse: NoteSourceResponse?): NoteSource?
+    fun size(): Int
+    fun getNoteDate(position: Int): NoteData?
+    fun addNote(noteData: NoteData?)
+    fun deleteNote(position: Int)
+    fun updateNote(position: Int, noteData: NoteData?)
+    fun clearNote()
 }

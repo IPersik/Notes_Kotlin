@@ -1,95 +1,67 @@
-package com.example.noteskotlin.data;
+package com.example.noteskotlin.data
 
+import com.example.noteskotlin.data.NoteDataMapping.Companion.toNoteData
+import com.google.android.gms.tasks.OnCompleteListener
+import com.google.firebase.firestore.*
+import java.util.*
 
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.DocumentReference;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.Query;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.google.firebase.firestore.QuerySnapshot;
+class NoteSourceFirebase : NoteSource {
+    private val firebaseFirestore = FirebaseFirestore.getInstance()
+    var collectionReference = firebaseFirestore.collection(NOTE_COLLECTION)
+    private var notesData: MutableList<NoteData?>? = ArrayList()
+    val noteSource: List<NoteData?>?
+        get() = notesData
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
-public class NoteSourceFirebase implements NoteSource {
-
-    static String NOTE_COLLECTION = "Notes";
-    private static final String TAG = "[CardsSourceFirebaseImpl]";
-    private FirebaseFirestore firebaseFirestore = FirebaseFirestore.getInstance();
-
-    CollectionReference collectionReference = firebaseFirestore.collection(NOTE_COLLECTION);
-    private List<NoteData> notesData = new ArrayList<NoteData>();
-
-    public List<NoteData> getNoteSource() {
-        return notesData;
-    }
-
-    @Override
-    public NoteSource init(NoteSourceResponse noteSourceResponse) {
-        collectionReference.orderBy(NoteDataMapping.Fields.TITLE, Query.Direction.DESCENDING).get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-            @Override
-            public void onComplete(Task<QuerySnapshot> task) {
-                notesData = new ArrayList<>();
-                if (task.isSuccessful()) {
-                    for (QueryDocumentSnapshot document : task.getResult()) {
-                        Map<String, Object> documentMap = document.getData();
-                        String id = document.getId();
-                        NoteData noteData = NoteDataMapping.toNoteData(id, documentMap);
-                        notesData.add(noteData);
-                    }
+    override fun init(noteSourceResponse: NoteSourceResponse?): NoteSource? {
+        collectionReference.orderBy(NoteDataMapping.Fields.TITLE, Query.Direction.DESCENDING).get().addOnCompleteListener(OnCompleteListener<QuerySnapshot> { task ->
+            notesData = ArrayList()
+            if (task.isSuccessful) {
+                for (document in task.result!!) {
+                    val documentMap = document.data
+                    val id = document.id
+                    val noteData = toNoteData(id, documentMap)
+                    (notesData as ArrayList<NoteData?>).add(noteData)
                 }
-                noteSourceResponse.initialized(NoteSourceFirebase.this);
             }
-        });
-        return this;
+            noteSourceResponse!!.initialized(this@NoteSourceFirebase)
+        })
+        return this
     }
 
-    @Override
-    public int size() {
-        if (notesData == null){
-            return 0;
+    override fun size(): Int {
+        return if (notesData == null) {
+            0
+        } else notesData!!.size
+    }
+
+    override fun getNoteDate(position: Int): NoteData? {
+        return notesData!![position]
+    }
+
+    override fun addNote(noteData: NoteData?) {
+        collectionReference.add(NoteDataMapping.toDocument(noteData!!)).addOnSuccessListener { documentReference -> noteData.id = documentReference.id }
+        notesData!!.add(noteData)
+    }
+
+    override fun deleteNote(position: Int) {
+        collectionReference.document(notesData!![position]!!.id).delete()
+        notesData!!.removeAt(position)
+    }
+
+    override fun updateNote(position: Int, noteData: NoteData?) {
+        collectionReference.document(notesData!![position]!!.id).set(NoteDataMapping.toDocument(noteData!!))
+        notesData!![position] = noteData
+    }
+
+    override fun clearNote() {
+        for (noteData in notesData!!) {
+            collectionReference.document(noteData!!.id).delete()
         }
-        return notesData.size();
+        notesData!!.clear()
     }
 
-    @Override
-    public NoteData getNoteDate(int position) {
-        return notesData.get(position);
-    }
-
-    @Override
-    public void addNote(NoteData noteData) {
-        collectionReference.add(NoteDataMapping.toDocument(noteData)).addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
-
-            public void onSuccess(DocumentReference documentReference) {
-                noteData.setId(documentReference.getId());
-            }
-        });
-        notesData.add(noteData);
-    }
-
-    @Override
-    public void deleteNote(int position) {
-        collectionReference.document(notesData.get(position).getId()).delete();
-
-        notesData.remove(position);
-    }
-
-    @Override
-    public void updateNote(int position, NoteData noteData) {
-        collectionReference.document(notesData.get(position).getId()).set(NoteDataMapping.toDocument(noteData));
-        notesData.set(position, noteData);
-    }
-
-    @Override
-    public void clearNote() {
-        for (NoteData noteData : notesData) {
-            collectionReference.document(noteData.getId()).delete();
-        }
-        notesData.clear();
+    companion object {
+        var NOTE_COLLECTION = "Notes"
+        private const val TAG = "[CardsSourceFirebaseImpl]"
     }
 }

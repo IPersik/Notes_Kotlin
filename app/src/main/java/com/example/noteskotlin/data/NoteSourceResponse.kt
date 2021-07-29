@@ -1,5 +1,5 @@
-package com.example.noteskotlin.data;
+package com.example.noteskotlin.data
 
-public interface NoteSourceResponse {
-    void initialized(NoteSource noteSource);
+interface NoteSourceResponse {
+    fun initialized(noteSource: NoteSource?)
 }

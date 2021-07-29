@@ -45,18 +45,12 @@ public class NoteFragment extends Fragment {
         View view = inflater.inflate(R.layout.list_item, container, false);
         initView(view);
         setHasOptionsMenu(true);
-        //recyclerView = view.findViewById(R.id.recycler_view_lines);
         data = (NoteSourceIResponseImpl) new NoteSourceFirebase().init(new NoteSourceResponse() {
             @Override
             public void initialized(NoteSource noteSource) {
-                //noteAdapter.notifyDataSetChanged();
             }
         });
         noteAdapter.setDataSource(data);
-        //data.init();
-        //
-        //recyclerView.setAdapter(noteAdapter);
-        //setHasOptionsMenu(true);
         return view;
     }
     private void initRecyclerView(){
@@ -66,7 +60,6 @@ public class NoteFragment extends Fragment {
         LinearLayoutManager layoutManager = new LinearLayoutManager(getContext());
         recyclerView.setLayoutManager(layoutManager);
 
-        // Установим адаптер
         noteAdapter = new NoteAdapter(this);
         recyclerView.setAdapter(noteAdapter);
 
@@ -74,8 +67,6 @@ public class NoteFragment extends Fragment {
             recyclerView.scrollToPosition(0);
             moveToFirstPosition = false;
         }
-
-        // Установим слушателя
 
         noteAdapter = new NoteAdapter(this); //добавлен фрагмент
         noteAdapter.SetOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -92,7 +83,6 @@ public class NoteFragment extends Fragment {
         super.onAttach(context);
         MainActivity activity = (MainActivity)context;
         navigation = activity.getNavigation();
-        //navigation = activity.getNavigation();
         publisher = activity.getPublisher();
     }
 

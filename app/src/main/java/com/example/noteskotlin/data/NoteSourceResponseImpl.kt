@@ -1,69 +1,48 @@
-package com.example.noteskotlin.data;
+package com.example.noteskotlin.data
 
-import android.content.res.Resources;
+import android.content.res.Resources
+import com.example.noteskotlin.R
+import java.util.*
 
-import com.example.noteskotlin.R;
-
-import java.util.ArrayList;
-import java.util.List;
-
-public class NoteSourceIResponseImpl implements NoteSource {
-    private List<NoteData> noteSource;
-    private Resources resources;
-
-    public NoteSourceIResponseImpl(Resources resources) {
-        this.resources = resources;
-        noteSource = new ArrayList<>();
-    }
-
-    public NoteSourceIResponseImpl init(NoteSourceResponse noteSourceResponse) {
-        String[] titles = resources.getStringArray(R.array.nameNotes);
-        for (int i = 0; i < titles.length; i++) {
-            noteSource.add(new NoteData(titles[i]));
+class NoteSourceIResponseImpl(private val resources: Resources) : NoteSource {
+    private val noteSource: MutableList<NoteData?>
+    override fun init(noteSourceResponse: NoteSourceResponse?): NoteSourceIResponseImpl? {
+        val titles = resources.getStringArray(R.array.nameNotes)
+        for (i in titles.indices) {
+            noteSource.add(NoteData(titles[i]))
         }
-        if (noteSourceResponse != null){
-            noteSourceResponse.initialized(this);
-        }
-        return this;
+        noteSourceResponse?.initialized(this)
+        return this
+    }
+    override fun size(): Int {
+        return noteSource.size
     }
 
-    /*@Override
-    public NoteSource init(NoteSourceResponse noteSourceResponse) {
-        return null;
-    }*/
-
-    @Override
-    public int size() {
-        return noteSource.size();
+    override fun getNoteDate(position: Int): NoteData? {
+        return noteSource[position]
     }
 
-    @Override
-    public NoteData getNoteDate(int position) {
-        return noteSource.get(position);
+    override fun addNote(noteData: NoteData?) {
+        noteSource.add(noteData)
     }
 
-    @Override
-    public void addNote(NoteData noteData) {
-        noteSource.add(noteData);
+    override fun deleteNote(position: Int) {
+        noteSource.removeAt(position)
     }
 
-    @Override
-    public void deleteNote(int position) {
-        noteSource.remove(position);
+    override fun updateNote(position: Int, noteData: NoteData?) {
+        noteSource[position] = noteData
     }
 
-    @Override
-    public void updateNote(int position, NoteData noteData) {
-        noteSource.set(position, noteData);
+    override fun clearNote() {
+        noteSource.clear()
     }
 
-    @Override
-    public void clearNote() {
-        noteSource.clear();
+    fun getNoteSource(): List<NoteData?> {
+        return noteSource
     }
 
-    public List<NoteData> getNoteSource() {
-        return noteSource;
+    init {
+        noteSource = ArrayList()
     }
-
 }
