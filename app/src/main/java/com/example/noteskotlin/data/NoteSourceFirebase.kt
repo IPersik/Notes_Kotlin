@@ -12,7 +12,7 @@ class NoteSourceFirebase : NoteSource {
     val noteSource: List<NoteData?>?
         get() = notesData
 
-    override fun init(noteSourceResponse: NoteSourceResponse?): NoteSource? {
+    override fun init(noteSourceResponse: NoteSourceResponse?): NoteSource {
         collectionReference.orderBy(NoteDataMapping.Fields.TITLE, Query.Direction.DESCENDING).get().addOnCompleteListener(OnCompleteListener<QuerySnapshot> { task ->
             notesData = ArrayList()
             if (task.isSuccessful) {
@@ -35,10 +35,10 @@ class NoteSourceFirebase : NoteSource {
     }
 
     override fun getNoteDate(position: Int): NoteData? {
-        return notesData!![position]
+        return noteSource?.get(position)
     }
 
-    override fun addNote(noteData: NoteData?) {
+    override fun addNote(noteData: NoteData) {
         collectionReference.add(NoteDataMapping.toDocument(noteData!!)).addOnSuccessListener { documentReference -> noteData.id = documentReference.id }
         notesData!!.add(noteData)
     }
@@ -48,8 +48,9 @@ class NoteSourceFirebase : NoteSource {
         notesData!!.removeAt(position)
     }
 
-    override fun updateNote(position: Int, noteData: NoteData?) {
-        collectionReference.document(notesData!![position]!!.id).set(NoteDataMapping.toDocument(noteData!!))
+
+    override fun updateNote(position: Int, noteData: NoteData) {
+        notesData?.get(position)?.let { collectionReference.document(it.id).set(NoteDataMapping.toDocument(noteData)) }
         notesData!![position] = noteData
     }
 

@@ -6,7 +6,9 @@ import java.util.*
 
 class NoteSourceIResponseImpl(private val resources: Resources) : NoteSource {
     private val noteSource: MutableList<NoteData?>
-    override fun init(noteSourceResponse: NoteSourceResponse?): NoteSourceIResponseImpl? {
+
+
+    override fun init(noteSourceResponse: NoteSourceResponse?): NoteSourceIResponseImpl{
         val titles = resources.getStringArray(R.array.nameNotes)
         for (i in titles.indices) {
             noteSource.add(NoteData(titles[i]))
@@ -22,7 +24,7 @@ class NoteSourceIResponseImpl(private val resources: Resources) : NoteSource {
         return noteSource[position]
     }
 
-    override fun addNote(noteData: NoteData?) {
+    override fun addNote(noteData: NoteData) {
         noteSource.add(noteData)
     }
 
@@ -30,7 +32,7 @@ class NoteSourceIResponseImpl(private val resources: Resources) : NoteSource {
         noteSource.removeAt(position)
     }
 
-    override fun updateNote(position: Int, noteData: NoteData?) {
+    override fun updateNote(position: Int, noteData: NoteData) {
         noteSource[position] = noteData
     }
 
