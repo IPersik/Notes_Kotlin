@@ -7,9 +7,9 @@ import java.util.*
 
 class NoteSourceFirebase : NoteSource {
     private val firebaseFirestore = FirebaseFirestore.getInstance()
-    var collectionReference = firebaseFirestore.collection(NOTE_COLLECTION)
+    private var collectionReference = firebaseFirestore.collection(NOTE_COLLECTION)
     private var notesData: MutableList<NoteData?>? = ArrayList()
-    val noteSource: List<NoteData?>?
+    private val noteSource: List<NoteData?>?
         get() = notesData
 
     override fun init(noteSourceResponse: NoteSourceResponse?): NoteSource {
@@ -47,7 +47,6 @@ class NoteSourceFirebase : NoteSource {
         collectionReference.document(notesData!![position]!!.id).delete()
         notesData!!.removeAt(position)
     }
-
 
     override fun updateNote(position: Int, noteData: NoteData) {
         notesData?.get(position)?.let { collectionReference.document(it.id).set(NoteDataMapping.toDocument(noteData)) }
